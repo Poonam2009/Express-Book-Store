@@ -1,5 +1,6 @@
+require('dotenv/config')
 const express = require('express');
-const bookDb = require('./models/bookDb')
+const bookDb = require('./models/book')
 const bookRouter = require('./routes/book.routes')
 const {loggerMiddleware} = require('./middlewares/logger')
 

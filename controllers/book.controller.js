@@ -1,41 +1,49 @@
-const BOOKS = require('../models/bookDb')
+const { bookTable } = require("../models/book.model");
+const db = require("../db");
+const { eq } = require("drizzle-orm");
 
-exports.getAllBooks = function(req, res ) {
-    res.json(BOOKS); 
-}
+exports.getAllBooks = async function (req, res) {
+  const books = await db.select().from(bookTable);
+  return res.json(books);
+};
 
-exports.getBookById = function(req, res){
-    const id = parseInt(req.params.id)
-    if(isNaN(id)) return res.status(400).json({error: 'id must be of type number'})
-    const book = BOOKS.find((e) => e.id == id)
-    if(!book) return res.status(404).json({error: `book with id ${id} not found!`})
-    return res.json(book);
-}
+exports.getBookById = async function (req, res) {
+  const id = req.params.id;
 
-exports.createBook = function(req, res) {
-    const {title, author} = req.body
-    if(!title || title === "") return res.status(400).json({error: 'Bad request, Title is required'})
+  const [book] = await db
+    .select()
+    .from(bookTable)
+    .where((table) => eq(table.id, id))
+    .limit(1);
 
-    if(!author || author === "") return res.status(400).json({error: 'Bad request, Author is required'})
-    
-    const id = BOOKS .length + 1;
-    const book = {id, title, author}
-    BOOKS.push(book)
-    return res.status(201).json({message: `book created success Id : ${id}`})
-}
+  if (!book)
+    return res.status(404).json({ error: `book with id ${id} not found!` });
+  return res.json(book);
+};
 
-exports.deleteBookById = (req, res) => {
+exports.createBook = async function (req, res) {
+  const { title, description, authorId } = req.body;
+  if (!title || title === "")
+    return res.status(400).json({ error: "Bad request, Title is required" });
 
-    const id = parseInt(req.params.id)
-    if(isNaN(id)) return res.status(400).json({error: 'id must be of type number'})
-    
-    const indexToDelete = BOOKS.findIndex(e => e.id === id)
-    if(indexToDelete < 0) return res
-    .status(404)
-    .json({error: `book with id ${id} not found!`})
+  const [result] = await db
+    .insert(bookTable)
+    .values({
+      title,
+      description,
+      authorId,
+    })
+    .returning({
+      id: bookTable.id,
+    });
 
-    BOOKS.splice(indexToDelete, 1);
+  return res.status(201).json({ message: "book created success", id: result.id });
+};
 
-    return res.status(200).json({message: 'Book Deleted'})
+exports.deleteBookById = async (req, res) => {
+  const id = req.params.id;
 
-}
+  await db.delete(bookTable).where(eq(bookTable.id, id));
+
+  return res.status(200).json({ message: "Book Deleted" });
+};

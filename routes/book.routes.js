@@ -57,6 +57,6 @@ router.post('/', controller.createBook);
 
 // })
 
-router.delete('/:id', controller.deleteBookById)
+router.delete('/:id', controller.deleteBookById) 
 
 module.exports = router;
