@@ -1,27 +1,57 @@
 # Express Book Store
 
-A simple Express.js application for managing a collection of books using an in-memory data store.
+A simple Express.js application for managing authors and books using PostgreSQL with Drizzle ORM.
 
 ## Features
 
+- Get all authors
+- Get an author by ID
+- Create a new author
+- Get all books by author
 - Get all books
 - Get a book by ID
 - Create a new book
 - Delete a book by ID
-- Basic request logging middleware
+- Request logging middleware
+- JSON validation error handling
+
+## Tech Stack
+
+- Node.js
+- Express.js
+- PostgreSQL
+- Drizzle ORM
+- Drizzle Kit
 
 ## Project Structure
 
 - `index.js` - Main server entry point
-- `routes/` - Route definitions for books
-- `controllers/` - Controller logic (if used)
+- `routes/` - Route definitions for books and authors
+- `controllers/` - Request handlers for author and book logic
+- `models/` - Drizzle table schemas
+- `db/` - Database connection setup
 - `middlewares/` - Custom middleware
-- `db/` - In-memory book data
+- `drizzle.config.js` - Drizzle configuration
+- `logs.txt` - Request logs
 
 ## Installation
 
 ```bash
 npm install
+```
+
+Create a `.env` file in the project root with your PostgreSQL connection string:
+
+```env
+DATABASE_URL=postgresql://username:password@localhost:5432/your_database
+PORT=8000
+```
+
+## Generate / Push Database Schema
+
+```bash
+npx drizzle-kit generate
+npx drizzle-kit push
 ```
 
 ## Run the Server
@@ -38,19 +68,64 @@ http://localhost:8000
 
 ## API Endpoints
 
-### Get all books
+### Authors
+
+#### Get all authors
+
+```http
+GET /authors
+```
+
+#### Get an author by ID
+
+```http
+GET /authors/:id
+```
+
+#### Create an author
+
+```http
+POST /authors
+Content-Type: application/json
+```
+
+Example body:
+
+```json
+{
+  "firstName": "Poonam",
+  "lastName": "Rawat",
+  "email": "poonam@example.com"
+}
+```
+
+#### Get all books by author
+
+```http
+GET /authors/:id/books
+```
+
+### Books
+
+#### Get all books
 
 ```http
 GET /books
 ```
 
-### Get a book by ID
+#### Search books
+
+```http
+GET /books?search=javascript
+```
+
+#### Get a book by ID
 
 ```http
 GET /books/:id
 ```
 
-### Create a book
+#### Create a book
 
 ```http
 POST /books
@@ -61,12 +136,13 @@ Example body:
 
 ```json
 {
-  "title": "New Book",
-  "author": "Jane Doe"
+  "title": "Clean Code",
+  "description": "A handbook of agile software craftsmanship",
+  "authorId": "<author-uuid>"
 }
 ```
 
-### Delete a book
+#### Delete a book by ID
 
 ```http
 DELETE /books/:id
@@ -74,5 +150,7 @@ DELETE /books/:id
 
 ## Notes
 
-- This project uses an in-memory array, so data will be reset when the server restarts.
+- The project uses PostgreSQL and Drizzle ORM instead of the old in-memory store.
+- Book records are linked to authors via the `authorId` field.
 - Request logs are written to `logs.txt` by the logger middleware.
+- Invalid JSON payloads return a clean `400` response with an error message.
