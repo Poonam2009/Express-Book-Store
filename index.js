@@ -2,6 +2,7 @@ require('dotenv/config')
 const express = require('express');
 const bookDb = require('./models/book')
 const bookRouter = require('./routes/book.routes')
+const authorRouter = require('./routes/author.routes')
 const {loggerMiddleware} = require('./middlewares/logger')
 
 
@@ -36,6 +37,15 @@ function customMiddleware(req,res, next){
 
 //Middlewares (plugins)
 app.use(express.json());
+app.use((err, req, res, next) => {
+    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+        return res.status(400).json({
+            error: 'Invalid JSON payload. Please send valid JSON.',
+            details: err.message,
+        });
+    }
+    next(err);
+});
 app.use(loggerMiddleware)
 // app.use(function(req, res, next){
 //     const log = `\n[${Date.now()}] ${req.method} ${req.path}`
@@ -57,8 +67,9 @@ app.use(loggerMiddleware)
 
 
 // Routes
-
+// Register book and author endpoints
 app.use('/books',  bookRouter)
+app.use('/authors',  authorRouter)
 
 // app.get('/books', (req, res) => {
 //     // res.setHeader('x-piy', 'poonam rawat') // for custom headers
