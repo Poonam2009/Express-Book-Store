@@ -40,7 +40,6 @@ exports.createAuthor = async function (req, res) {
   return res.status(201).json({ message: "Author created success", Id :result.id });
 };
 
-// Fetch all books written by a particular author
 exports.getAllTheBooksByAuthor = async (req, res) => {
   const authorId = req.params.id;
 
